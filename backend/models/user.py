@@ -10,5 +10,20 @@ class User(db.Model):
     age = db.Column(db.Integer, nullable=True)
     # loan_id = db.Column()
 
+def login():
+    pass
+
+def logout():
+    pass
 
 
+
+
+def add_customer():
+    pass
+
+def del_customer():
+    pass
+
+def edit_customer():
+    pass

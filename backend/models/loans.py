@@ -11,3 +11,9 @@ class Loan(db.Model):
 
 
 
+def show_all_loans():
+    pass
+def add_loan():
+    pass
+def del_loan():
+    pass

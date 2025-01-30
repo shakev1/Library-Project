@@ -9,3 +9,14 @@ class Game(db.Model):
     author = db.Column(db.String(200), nullable=False)
     year_published = db.Column(db.Integer, nullable=False)
     types = db.Column(db.Integer, nullable=False)
+
+
+    def get_game():
+        pass
+    def add_game():
+        pass
+    def del_game():
+        pass
+    def edit_game():
+        pass
+    
