@@ -3,7 +3,7 @@ from flask_cors import CORS
 from datetime import datetime, timedelta
 from models import db
 from models.user import User
-from models.book import Book
+from backend.models.Game import Book
 from models.loans import Loan
 
 
@@ -17,6 +17,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 # relative path from the current directory
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///library.db'
 db.init_app(app)  # initializes the databsewith the flask application
+
 
 
 # this is a decorator from the flask module to define a route for for adding a book, supporting POST requests.(check the decorator summary i sent you and also the exercises)
