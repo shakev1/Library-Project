@@ -1,96 +1,106 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify, request, session
 from flask_cors import CORS
-from datetime import datetime, timedelta
 from models import db
-from models.user import User
-from backend.models.Game import Book
+from models.user import Admin, Customer
+from models.book import Game
 from models.loans import Loan
+from config import Config
+from datetime import datetime
 
+app = Flask(__name__)
+app.config.from_object(Config)
+CORS(app)
+db.init_app(app)
 
-app = Flask(__name__)  # - create a flask instance
-# - enable all routes, allow requests from anywhere (optional - not recommended for security)
-CORS(app, resources={r"/*": {"origins": "*"}})
+# Authentication routes
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    admin = Admin.query.filter_by(username=data['username']).first()
+    
+    if admin and admin.check_password(data['password']):
+        session['admin_id'] = admin.id
+        return jsonify({'message': 'Login successful'}), 200
+    return jsonify({'message': 'Invalid credentials'}), 401
 
+@app.route('/api/logout', methods=['POST'])
+def logout():
+    session.pop('admin_id', None)
+    return jsonify({'message': 'Logout successful'}), 200
 
-# Specifies the database connection URL. In this case, it's creating a SQLite database
-# named 'library.db' in your project directory. The three slashes '///' indicate a
-# relative path from the current directory
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///library.db'
-db.init_app(app)  # initializes the databsewith the flask application
+# Game routes
+@app.route('/api/games', methods=['GET'])
+def get_games():
+    games = Game.query.all()
+    return jsonify([game.to_dict() for game in games])
 
-
-
-# this is a decorator from the flask module to define a route for for adding a book, supporting POST requests.(check the decorator summary i sent you and also the exercises)
-@app.route('/books', methods=['POST'])
-def add_book():
-    data = request.json  # this is parsing the JSON data from the request body
-    new_book = Book(
-        title=data['title'],  # Set the title of the new book.
-        author=data['author'],  # Set the author of the new book.
-        year_published=data['year_published'],
-        # Set the types(fantasy, thriller, etc...) of the new book.
-        types=data['types']
-        # add other if needed...
+@app.route('/api/games', methods=['POST'])
+def add_game():
+    data = request.get_json()
+    new_game = Game(
+        title=data['title'],
+        genre=data['genre'],
+        price=data['price'],
+        quantity=data['quantity']
     )
-    db.session.add(new_book)  # add the bew book to the database session
-    db.session.commit()  # commit the session to save in the database
-    return jsonify({'message': 'Book added to database.'}), 201
+    db.session.add(new_game)
+    db.session.commit()
+    return jsonify(new_game.to_dict()), 201
 
+@app.route('/api/games/<int:game_id>', methods=['DELETE'])
+def delete_game(game_id):
+    game = Game.query.get_or_404(game_id)
+    db.session.delete(game)
+    db.session.commit()
+    return jsonify({'message': 'Game deleted'}), 200
 
-# a decorator to Define a new route that handles GET requests
-@app.route('/books', methods=['GET'])
-def get_books():
-    try:
-        books = Book.query.all()                    # Get all the books from the database
+# Customer routes
+@app.route('/api/customers', methods=['POST'])
+def add_customer():
+    data = request.get_json()
+    new_customer = Customer(
+        name=data['name'],
+        email=data['email'],
+        phone=data['phone']
+    )
+    db.session.add(new_customer)
+    db.session.commit()
+    return jsonify({'id': new_customer.id, 'name': new_customer.name}), 201
 
-        # Create empty list to store formatted book data we get from the database
-        books_list = []
+# Loan routes
+@app.route('/api/loans', methods=['POST'])
+def create_loan():
+    data = request.get_json()
+    game = Game.query.get_or_404(data['game_id'])
+    
+    if game.loan_status:
+        return jsonify({'message': 'Game is already loaned'}), 400
+    
+    new_loan = Loan(
+        game_id=data['game_id'],
+        customer_id=data['customer_id'],
+        loan_date=datetime.utcnow()
+    )
+    
+    game.loan_status = True
+    game.customer_id = data['customer_id']
+    game.loan_date = datetime.utcnow()
+    
+    db.session.add(new_loan)
+    db.session.commit()
+    return jsonify({'message': 'Loan created successfully'}), 201
 
-        for book in books:                         # Loop through each book from database
-            book_data = {                          # Create a dictionary for each book
-                'id': book.id,
-                'title': book.title,
-                'author': book.author,
-                'year_published': book.year_published,
-                'types': book.types
-            }
-            # Add the iterated book dictionary to our list
-            books_list.append(book_data)
-
-        return jsonify({                           # Return JSON response
-            'message': 'Books retrieved successfully',
-            'books': books_list
-        }), 200
-
-    except Exception as e:
-        return jsonify({
-            'error': 'Failed to retrieve books',
-            'message': str(e)
-        }), 500                                    #
-
+@app.route('/api/loans', methods=['GET'])
+def get_loans():
+    loans = Loan.query.filter_by(return_date=None).all()
+    return jsonify([{
+        'id': loan.id,
+        'game_title': loan.game.title,
+        'customer_name': loan.customer.name,
+        'loan_date': loan.loan_date.isoformat()
+    } for loan in loans])
 
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()  # Create all database tables defined in your  models(check the models folder)
-
-    # with app.test_client() as test:
-    #     response = test.post('/books', json={  # Make a POST request to /books endpoint with book  data
-    #         'title': 'Harry Potter',
-    #         'author': 'J.K. Rowling',
-    #         'year_published': 1997,
-    #         'types': '1'  # lets say 1 is fantasy
-    #     })
-    #     print("Testing /books endpoint:")
-    #     # print the response from the server
-    #     print(f"Response: {response.data}")
-
-    #     #  GET test here
-    #     get_response = test.get('/books')
-    #     print("\nTesting GET /books endpoint:")
-    #     print(f"Response: {get_response.data}")
-
-    app.run(debug=True)  # start the flask application in debug mode
-
-    # DONT FORGET TO ACTIVATE THE ENV FIRST:
-    # /env/Scripts/activate - for windows
-    # source ./env/bin/activate - - mac
+        db.create_all()
+    app.run(debug=True)

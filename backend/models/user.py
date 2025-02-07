@@ -1,29 +1,26 @@
-# create a __init__.py file in the models folder to make all the model act as a package if you dont have it already , also you can make one file with all the models just copy ythe all the code in the files into it
-
 from . import db
+from werkzeug.security import generate_password_hash, check_password_hash
 
-class User(db.Model):
+class Admin(db.Model):
+    __tablename__ = 'admins'
+    
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    phone_number = db.Column(db.String(10), nullable=False)
-    city = db.Column(db.String(50), nullable=False)
-    age = db.Column(db.Integer, nullable=True)
-    # loan_id = db.Column()
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password_hash = db.Column(db.String(120), nullable=False)
 
-def login():
-    pass
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
 
-def logout():
-    pass
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
-
-
-
-def add_customer():
-    pass
-
-def del_customer():
-    pass
-
-def edit_customer():
-    pass
+class Customer(db.Model):
+    __tablename__ = 'customers'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    phone = db.Column(db.String(20), nullable=False)
+    
+    # Relationship with games
+    loaned_games = db.relationship('Game', backref='customer', lazy=True)

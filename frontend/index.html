@@ -1,49 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Library Management System</title>
-    <link rel="stylesheet" href="static/css/styles.css" />
-    
-  </head>
-  <body>
-    <div class="container">
-      <div id="auth-section">
-        <h2>Authentication</h2>
-        <div id="login-form">
-          <input type="text" id="username" placeholder="Username" />
-          <input type="password" id="password" placeholder="Password" />
-          <button onclick="login()">Login</button>
-          <button onclick="register()">Register</button>
-        </div>
-      </div>
-
-      <div id="main-section" class="hidden">
-        <div class="header">
-          <h1>Library Management System</h1>
-          <button onclick="logout()">Logout</button>
-        </div>
-
-        <div class="books-section">
-          <h2>Add New Book</h2>
-          <div class="form-group">
-            <input type="text" id="book-title" placeholder="Title" />
-            <input type="text" id="book-author" placeholder="Author" />
-            <input type="text" id="book-year-published" placeholder="Year Published" />
-            <input type="text" id="book-type" placeholder="type" />
-            <button onclick="addBook()">Add Book</button>
-          </div>
-
-          <h2>All Books</h2>
-          <div id="books-list" class="books-grid"></div>
-
-          <h2>Loaned Books</h2>
-          <div id="loaned-books-list" class="books-grid"></div>
-        </div>
-      </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Store Management System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="login-container" class="container">
+        <h2>Admin Login</h2>
+        <form id="login-form">
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script> 
+
+    <div id="dashboard-container" class="container hidden">
+        <header>
+            <h1>Game Store Dashboard</h1>
+            <button id="logout-btn">Logout</button>
+        </header>
+
+        <div class="dashboard-grid">
+            <section class="games-section">
+                <h2>Games Inventory</h2>
+                <form id="add-game-form">
+                    <input type="text" id="game-title" placeholder="Title" required>
+                    <input type="text" id="game-genre" placeholder="Genre" required>
+                    <input type="number" id="game-price" placeholder="Price" step="0.01" required>
+                    <input type="number" id="game-quantity" placeholder="Quantity" required>
+                    <button type="submit">Add Game</button>
+                </form>
+                <div id="games-list"></div>
+            </section>
+
+            <section class="customers-section">
+                <h2>Customer Registration</h2>
+                <form id="add-customer-form">
+                    <input type="text" id="customer-name" placeholder="Name" required>
+                    <input type="email" id="customer-email" placeholder="Email" required>
+                    <input type="tel" id="customer-phone" placeholder="Phone" required>
+                    <button type="submit">Register Customer</button>
+                </form>
+            </section>
+
+            <section class="loans-section">
+                <h2>Loaned Games</h2>
+                <div id="loans-list"></div>
+            </section>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="script.js"></script>
-  </body>
+</body>
 </html>
