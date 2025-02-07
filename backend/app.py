@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request, session
 from flask_cors import CORS
 from models import db
 from models.user import Admin, Customer
-from models.book import Game
+from models.Game import Game
 from models.loans import Loan
 from config import Config
 from datetime import datetime
