@@ -11,20 +11,6 @@ class Game(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     loan_status = db.Column(db.Boolean, default=False)
     
-    # Foreign key to customer
+    # Foreign key for customer relationship
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=True)
-    
-    # Loan date tracking
     loan_date = db.Column(db.DateTime, nullable=True)
-    
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'title': self.title,
-            'genre': self.genre,
-            'price': self.price,
-            'quantity': self.quantity,
-            'loan_status': self.loan_status,
-            'customer_id': self.customer_id,
-            'loan_date': self.loan_date.isoformat() if self.loan_date else None
-        }
